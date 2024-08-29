@@ -1,0 +1,42 @@
+name: Lint, format, typecheck, and test
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+
+env:
+  PYTHON_VERSION: '3.9'
+  POETRY_VERSION: '1.8.3'
+  POETRY_URL: https://install.python-poetry.org
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+
+      - name: Install Poetry ${{ env.POETRY_VERSION }}
+        run: |
+          curl -sSL ${{ env.POETRY_URL }} | python3.9 - --version ${{ env.POETRY_VERSION }}
+          echo "$HOME/.local/bin" >> $GITHUB_PATH
+
+      - name: Install dependencies
+        run: |
+          poetry install
+
+      - name: lint and check
+        run: |
+          poetry run pre-commit run --all-files

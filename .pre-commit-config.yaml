@@ -1,0 +1,45 @@
+repos:
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v4.6.0
+    hooks:
+      - id: trailing-whitespace
+      - id: end-of-file-fixer
+      - id: check-case-conflict
+      - id: debug-statements
+      - id: check-added-large-files
+      - id: check-merge-conflict
+      - id: check-json
+      - id: check-toml
+      - id: check-yaml
+  - repo: local
+    hooks:
+      - id: ruff-check
+        name: ruff check
+        entry: poetry run ruff check --fix
+        language: system
+        types: [python]
+        pass_filenames: false
+      - id: ruff-format
+        name: ruff format
+        entry: poetry run ruff format
+        language: system
+        types: [python]
+        pass_filenames: false
+      - id: mypy
+        name: mypy
+        entry: poetry run mypy
+        language: system
+        types: [python]
+        pass_filenames: false
+      - id: check-poetry-lock
+        name: Check Poetry lockfile
+        entry: poetry check --lock
+        language: system
+        types: [text]
+        pass_filenames: false
+      - id: codespell
+        name: codespell
+        entry: poetry run codespell .
+        language: system
+        types: [text]
+        pass_filenames: false
