@@ -11,7 +11,7 @@ numpy = ">=1.22.2"
 
 [tool.poetry.group.dev.dependencies]
 mypy = "^1.11.2"
-pytest = "^8.3.2"
+pytest = "^8.3.3"
 pytest-asyncio = "^0.24.0"
 pytest-cov = "^5.0.0"
 pytest-timeout = "^2.3.1"
