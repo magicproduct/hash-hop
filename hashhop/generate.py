@@ -1,10 +1,8 @@
-import copy
 import math
 import random
 import string
 from dataclasses import dataclass
 from typing import Dict, List
-import numpy as np
 
 TASK_PROMPT = """{VARIABLE_LIST}"""
 
@@ -18,8 +16,7 @@ CoT={COT}
 
 
 def make_random_string(length: int) -> str:
-    alphabet = string.ascii_lowercase + string.ascii_uppercase
-    return "".join(alphabet[ix] for ix in np.random.choice(len(alphabet), length))
+    return ''.join(random.choices(string.ascii_letters, k=length))
 
 
 def shuffle_dict(to_shuffle: dict) -> dict:
@@ -64,54 +61,57 @@ class MultiHopEval:
         levels = MultiHopEval._make_levels(
             n=n_chains, hops=hops, string_length=hash_pair_str_length
         )
-        lines = []
-        for i, length in enumerate(levels):
-            if i == len(levels) - 1:
-                # Quotes indicate the end of a chain
-                lines.extend([f"{k} = '{v}'" for k, v in length.items()])
-            else:
-                lines.extend([f"{k} = {v}" for k, v in length.items()])
-        all_query_pairs = copy.deepcopy(levels[0])
-        all_query_strings = {k: "" for k in all_query_pairs.keys()}
+        all_query_pairs = levels[0].copy()
+        all_query_keys = {k: "" for k in all_query_pairs}
         if hops > 1:
-            for i, length in enumerate(levels[1:]):
+            for i, level in enumerate(levels[1:]):
                 if chain_of_thought:
-                    if i == 0:
-                        all_query_strings = {k: f"{v}" for k, v in all_query_pairs.items()}
-                    else:
-                        all_query_strings = {
-                            k: f"{all_query_strings[k]} = {v}" if all_query_strings[k] != "" else v
-                            for k, v in all_query_pairs.items()
-                        }
+                    MultiHopEval._set_chain_of_thought_pairs(all_query_pairs, all_query_keys)
 
-                all_query_pairs = {k: length[v] for k, v in all_query_pairs.items()}
+                all_query_pairs = {k: level[v] for k, v in all_query_pairs.items()}
         if chain_of_thought:
-            all_query_strings = {
-                k: f"{all_query_strings[k]} = {v}" if all_query_strings[k] != "" else v
-                for k, v in all_query_pairs.items()
-            }
+            MultiHopEval._set_chain_of_thought_pairs(all_query_pairs, all_query_keys)
         else:
-            all_query_strings = all_query_pairs
+            all_query_keys = all_query_pairs
 
-        random.shuffle(lines)
-        shuffle_dict(all_query_strings)
+        shuffle_dict(all_query_keys)
 
         assert num_queries <= len(
-            all_query_strings
-        ), f"Got {num_queries} and {len(all_query_strings)}"
+            all_query_keys
+        ), f"Got {num_queries} and {len(all_query_keys)}"
 
         completion = COMPLETION_PROMPT.format(
             COMPLETION="\n".join(
-                [f"{k} = '{v}'" for k, v in list(all_query_strings.items())[:num_queries]]
+                [f"{k} = '{v}'" for k, v in list(all_query_keys.items())[:num_queries]]
             ),
             HOPS=hops,
             COT=chain_of_thought,
         )
         return MultiHopSample(
-            prompt=TASK_PROMPT.format(VARIABLE_LIST="\n".join(lines)),
+            prompt= MultiHopEval._get_prompt(levels),
             completion=completion,
-            targets=all_query_strings,
+            targets=all_query_keys,
         )
+
+
+    @staticmethod
+    def _get_prompt(levels):
+        lines = []
+        for i, level in enumerate(levels):
+            suffix = "'" if i == len(levels) - 1 else "" # Quotes indicate the end of a chain
+            lines.extend([f"{k} = {suffix}{v}{suffix}" for k, v in level.items()])
+        random.shuffle(lines)
+
+        return TASK_PROMPT.format(VARIABLE_LIST="\n".join(lines))
+
+
+    @staticmethod
+    def _set_chain_of_thought_pairs(all_query_pairs, all_query_keys):
+        for k in all_query_pairs:
+            prev = all_query_keys[k]
+            sep = " = " if prev else ""
+            all_query_keys[k] = f"{prev}{sep}{all_query_pairs[k]}"
+
 
     @staticmethod
     def _make_levels(n: int, hops: int, string_length: int) -> List[Dict[str, str]]:
