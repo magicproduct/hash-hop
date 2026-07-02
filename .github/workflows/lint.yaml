@@ -23,7 +23,7 @@ permissions:
 jobs:
   lint:
     name: Lint and test
-    runs-on: ubuntu-latest
+    runs-on: gh-4cpu-runner-mles
     steps:
       - uses: chainguard-actions/actions-checkout@d1f1061cdaee56aa3a3bc3deb86b67b1db772dd6 # v6.0.2
         with:
