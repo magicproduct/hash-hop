@@ -7,7 +7,7 @@ HashHop, [our long context architecture benchmark](https://magic.dev/blog/100m-t
 
 ### Prerequisites
 
-- Git
+- Git2
 - Python 3.9+
 - [Poetry](https://python-poetry.org/docs/#installation)
 
