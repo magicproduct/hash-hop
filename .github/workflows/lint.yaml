@@ -25,7 +25,7 @@ jobs:
     name: lint
     runs-on: ubuntu-latest
     steps:
-      - uses: chainguard-actions/actions-checkout@d1f1061cdaee56aa3a3bc3deb86b67b1db772dd6 # v6.0.2
+      - uses: chainguard-actions/actions-checkout@a42eec69c968e4ee261d1a2f03543e4198ac21b3 # v6.0.2
         with:
           persist-credentials: false
 
