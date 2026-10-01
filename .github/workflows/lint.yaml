@@ -30,7 +30,7 @@ jobs:
           persist-credentials: false
 
       - name: Set up Python
-        uses: chainguard-actions/actions-setup-python@fc62975567c9ddb597cf7c24edf7fd51d0187b79 # v6.3.0
+        uses: chainguard-actions/actions-setup-python@6e055a15c9b620aae4c8d0a8b85a69f93f1cce70 # v6.3.0
         with:
           python-version: ${{ env.PYTHON_VERSION }}
 
